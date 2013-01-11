@@ -111,6 +111,22 @@ void drawStar(int *sock, char *buf)
     
 }
 
+void drawCircle(int *sock, char *buf, int length)
+{
+    int i;
+    for (i = 0; i < length; i++) {
+        sprintf(buf, "M LR 60 40\n");
+        write(*sock, buf, strlen(buf));
+        memset(buf, 0, 80);
+        read(*sock, buf, 80);
+        
+        sprintf(buf, "C TRAIL\n");
+        write(*sock, buf, strlen(buf));
+        memset(buf, 0, 80);
+        read(*sock, buf, 80);
+    }
+}
+
 int main() {
 	char buf[80];
 	struct sockaddr_in s_addr;
@@ -135,7 +151,8 @@ int main() {
     //printf("MEL: %i\n", readME(&sock, buf, 0));
     //turnRobot(&sock, buf, 90);
     //driveRobot(&sock, buf, 10);
-    drawSquare(&sock, buf);
+    //drawSquare(&sock, buf);
+    drawCircle(&sock, buf, 275);
     //drawTriangle(&sock, buf);
     //drawStar(&sock, buf);
     //readME(&sock, buf);
