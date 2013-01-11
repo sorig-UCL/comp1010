@@ -43,7 +43,7 @@ double averageMEDifference(MEValue a, MEValue b)
 {
     int leftDifference = abs(a.leftME - b.leftME);
     int rightDifference = abs(a.rightME - b.rightME);
-    return (leftDifference + rightDifference)/2;
+    return (leftDifference + rightDifference)/2.0;
 }
 
 void turnRobot(int *sock, char *buf, int degrees)
@@ -51,7 +51,7 @@ void turnRobot(int *sock, char *buf, int degrees)
     MEValue initialME = readME(sock, buf);
     MEValue currentME = initialME;
     
-    while (averageMEDifference(initialME, currentME) <= degrees*(2.25))
+    while (averageMEDifference(initialME, currentME) <= degrees * 2.2666)
     {
         int speed = 1 * (degrees/abs(degrees));
         sprintf(buf, "M LR %i %i\n", speed, -speed);
@@ -94,10 +94,20 @@ void drawSquare(int *sock, char *buf)
 void drawTriangle(int *sock, char *buf)
 {
     driveRobot(sock, buf, 50);
-    turnRobot(sock, buf, 90);
+    turnRobot(sock, buf, 120);
     driveRobot(sock, buf, 50);
-    turnRobot(sock, buf, 90);
+    turnRobot(sock, buf, 120);
     driveRobot(sock, buf, 50);
+    
+}
+
+void drawStar(int *sock, char *buf)
+{
+    int i;
+    for (i = 0; i<5; i++) {
+        driveRobot(sock, buf, 50);
+        turnRobot(sock, buf, 144);
+    }
     
 }
 
@@ -126,5 +136,7 @@ int main() {
     //turnRobot(&sock, buf, 90);
     //driveRobot(&sock, buf, 10);
     drawSquare(&sock, buf);
+    //drawTriangle(&sock, buf);
+    //drawStar(&sock, buf);
     //readME(&sock, buf);
 }
