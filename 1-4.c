@@ -64,7 +64,16 @@ void presentMenu(int sock)
     int input;
     scanf("%i", &input);
     
-    double size = 1.0;
+    if (input >= 1 && input <= 3) {
+        printf("Please enter the size of the shape (in wheel turns): \n");
+    }
+    else if(input == 4)
+    {
+        printf("Please enter the radius (in wheel turns): \n");
+    }
+    
+    double size;
+    scanf("%lf", &size);
     
     printf("Drawing..\n");
     
