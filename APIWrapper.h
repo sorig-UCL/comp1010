@@ -1,11 +1,41 @@
+// Sensor type definitions
 typedef struct {
-    int leftME;
-    int rightME;
-} MEValue;
+    int values[3];
+    int length;
+} SensorValue;
 
+typedef enum {
+    SensorTypeIFL = 0,
+    SensorTypeIFR,
+    SensorTypeISL,
+    SensorTypeISR,
+    SensorTypeUS,
+    SensorTypeBFL,
+    SensorTypeBFR,
+    SensorTypeV,
+    SensorTypeMEL,
+    SensorTypeMER,
+    SensorTypeMCL,
+    SensorTypeMCR,
+    SensorTypeIBL,
+    SensorTypeIBC,
+    SensorTypeIBR,
+    SensorTypeIFLR,
+    SensorTypeISLR,
+    SensorTypeBFLR,
+    SensorTypeMELR,
+    SensorTypeMCLR,
+    SensorTypeIBLC,
+    SensorTypeIBCR,
+    SensorTypeIBLR,
+    SensorTypeIBLCR
+} SensorType;
 
 int connectAndGetSocket();
-void turnRobot(int sock, int degrees);
-void driveRobot(int sock, double wheelTurns, int speed, double turnRatio);
-void stopMotorsAndWait(int sock, int seconds);
-MEValue readME(int sock);
+int getVoltage();
+int sensorRead(SensorType type, SensorValue *value);
+int sendCommand(char *command);
+
+void turnRobot(int degrees);
+void driveRobot(double wheelTurns, int speed, double turnRatio);
+void stopMotorsAndWait(int seconds);

@@ -3,57 +3,57 @@
 
 #define PI 3.14159265358979323846
 
-void drawSquare(int sock, double size)
+void drawSquare(double size)
 {
     int i;
     for (i = 0; i < 4; i++)
     {
-        driveRobot(sock, size, 60, 1.0);
-        stopMotorsAndWait(sock, 1);
+        driveRobot(size, 60, 1.0);
+        stopMotorsAndWait(1);
         if (i < 3) {            
-            turnRobot(sock, 90);
+            turnRobot(90);
         }
     }
 }
 
-void drawTriangle(int sock, double size)
+void drawTriangle(double size)
 {
     int i;
     for (i = 0; i < 3; i++)
     {
-        driveRobot(sock, size, 60, 1.0);
-        stopMotorsAndWait(sock, 1);
+        driveRobot(size, 60, 1.0);
+        stopMotorsAndWait(1);
         if (i < 2) {            
-            turnRobot(sock, 120);
+            turnRobot(120);
         }        
     }    
 }
 
-void drawStar(int sock, double size)
+void drawStar(double size)
 {
     int i;
     for (i = 0; i<5; i++)
     {
-        driveRobot(sock, size, 60, 1.0);
-        stopMotorsAndWait(sock, 1);
+        driveRobot(size, 60, 1.0);
+        stopMotorsAndWait(1);
         if (i < 4) {            
-            turnRobot(sock, 144);
+            turnRobot(144);
         }        
     }    
 }
 
-void drawCircle(int sock, double radius)
+void drawCircle(double radius)
 {    
     double circumference = 2 * radius * PI;
     
     double ratio = 1 + (1/radius);
     double wheelTurns = circumference*(3.0/4.0);
     
-    driveRobot(sock, wheelTurns, 60, ratio);
-    stopMotorsAndWait(sock, 0);
+    driveRobot(wheelTurns, 60, ratio);
+    stopMotorsAndWait(0);
 }
 
-void presentMenu(int sock)
+void presentMenu()
 {
     printf("What would you like to draw? (type in an integer)\n");
     printf("1. Square\n");
@@ -79,16 +79,16 @@ void presentMenu(int sock)
     
     switch (input) {
         case 1:
-            drawSquare(sock, size);
+            drawSquare(size);
             break;
         case 2:
-            drawTriangle(sock, size);
+            drawTriangle(size);
             break;
         case 3:
-            drawStar(sock, size);
+            drawStar(size);
             break;
         case 4:
-            drawCircle(sock, size);
+            drawCircle(size);
             break;
         default:
             break;
@@ -98,9 +98,9 @@ void presentMenu(int sock)
 }
 
 int main() {
-	int sock = connectAndGetSocket();
+	connectAndGetSocket();
     
     while (1) {
-        presentMenu(sock);
+        presentMenu();
     }
 }
