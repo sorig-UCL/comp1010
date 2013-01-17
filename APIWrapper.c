@@ -20,16 +20,17 @@ SensorValue parseValueString(char *str);
 double avarageSensorDifference(SensorValue a, SensorValue b);
 int minimumSensorDifference(SensorValue a, SensorValue b);
 
-
 #define BUF_SIZE 80
 int sock = -1;
 
+char *global_ip = "127.0.0.1";
+int global_port = 55443;
+
 int connectAndGetSocket()
 {
-    int volts;
     printf("connecting...");
     struct sockaddr_in s_addr;
-    if (sock != -1) {
+    if (sock != -1) {void setIPAndPort(char *ip, int port);
         close(sock);
         sock = -1;
     }
@@ -41,8 +42,8 @@ int connectAndGetSocket()
     
     while (1) {
         s_addr.sin_family = AF_INET;
-        s_addr.sin_addr.s_addr = inet_addr("128.16.80.185");
-        s_addr.sin_port = htons(55443);
+        s_addr.sin_addr.s_addr = inet_addr(global_ip);
+        s_addr.sin_port = htons(global_port);
         
         if (connect(sock, (struct sockaddr *) &s_addr, sizeof(s_addr)) >= 0) {
             /* connection succeeded */
@@ -53,6 +54,12 @@ int connectAndGetSocket()
         printf(".");
         fflush(stdout);
     }
+}
+
+void setIPAndPort(char *ip, int port)
+{
+    global_ip = ip;
+    global_port = port;
 }
 
 int getVoltage() {
