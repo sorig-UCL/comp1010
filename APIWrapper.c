@@ -41,14 +41,12 @@ int connectAndGetSocket()
     
     while (1) {
         s_addr.sin_family = AF_INET;
-        s_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+        s_addr.sin_addr.s_addr = inet_addr("128.16.80.185");
         s_addr.sin_port = htons(55443);
         
         if (connect(sock, (struct sockaddr *) &s_addr, sizeof(s_addr)) >= 0) {
             /* connection succeeded */
             printf("done\n");
-            volts = getVoltage(sock);
-            printf("Battery state %2.1f volts\n", volts/10.0);
             return sock;
         }
         sleep(1);
@@ -235,7 +233,7 @@ int recvMsg(char *buf) {
     fd_set read_fdset;
     fd_set except_fdset;
     struct timeval tv;
-    tv.tv_sec = 2;
+    tv.tv_sec = 5;
     tv.tv_usec = 0;
     FD_ZERO(&read_fdset);
     FD_ZERO(&except_fdset);
