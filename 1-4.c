@@ -10,7 +10,7 @@ void drawSquare(double size)
     {
         driveRobot(size, 60, 1.0);
         stopMotorsAndWait(1);
-        if (i < 3) {            
+        if (i < 3) {
             turnRobot(90);
         }
     }
@@ -23,10 +23,10 @@ void drawTriangle(double size)
     {
         driveRobot(size, 60, 1.0);
         stopMotorsAndWait(1);
-        if (i < 2) {            
+        if (i < 2) {
             turnRobot(120);
-        }        
-    }    
+        }
+    }
 }
 
 void drawStar(double size)
@@ -36,14 +36,14 @@ void drawStar(double size)
     {
         driveRobot(size, 60, 1.0);
         stopMotorsAndWait(1);
-        if (i < 4) {            
+        if (i < 4) {
             turnRobot(144);
-        }        
-    }    
+        }
+    }
 }
 
 void drawCircle(double radius)
-{    
+{
     double circumference = 2 * radius * PI;
     
     double ratio = 1 + (1/radius);
