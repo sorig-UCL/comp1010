@@ -221,6 +221,24 @@ int sendCommand(char *command)
     }
 }
 
+int gp2d12_to_dist(int ir) {
+    int dist;
+    if (ir > 35)
+        dist = (6787 / (ir - 3)) - 4;
+    else
+        dist=200;
+    return dist;
+}
+
+int gp2d120_to_dist(int ir) {
+    int dist;
+    if (ir > 80)
+        dist = (2914 / (ir + 5)) - 1;
+    else
+        dist = 40;
+    return dist;
+}
+
 // Private functions
 // ----------------------------------------------------
 

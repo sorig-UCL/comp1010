@@ -36,6 +36,8 @@ void setIPAndPort(char *ip, int port);
 int getVoltage();
 int sensorRead(SensorType type, SensorValue *value);
 int sendCommand(char *command);
+int gp2d12_to_dist(int ir); // Front infrared rangefinders
+int gp2d120_to_dist(int ir); // Side infrared rangefinders
 
 void turnRobot(int degrees);
 void driveRobot(double wheelTurns, int speed, double turnRatio);
