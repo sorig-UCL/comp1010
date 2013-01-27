@@ -1,30 +1,95 @@
 #include <stdio.h>
 #include "APIWrapper.h"
 
-void followWall()
+#define LEFT 1
+#define RIGHT 0
+#define MIN(A, B) (A < B ? A : B)
+
+int infraredsToDist(SensorValue *sensorValue, SensorType type)
 {
-    int minimumDistance = 300;
-    int maximumDistance = 500;
+    int (*converterFunction)(int);
+    if (type == SensorTypeIFLR)
+    {
+        converterFunction = &gp2d12_to_dist;
+    }
+    else if (type == SensorTypeISLR)
+    {
+        converterFunction = &gp2d120_to_dist;
+    }
+    else
+    {
+        return -1;
+    }
     
-    sendCommand("I R 0");
-    SensorValue infraredRangeFinders;
+    int i;
+    for (i = 0; i < sensorValue->length; i++) {
+        sensorValue->values[i] = (*converterFunction)(sensorValue->values[i]);
+    }
     
-    while (1) {
-        sensorRead(SensorTypeIFR, &infraredRangeFinders);
-        printf("rangefinders: %i\n", infraredRangeFinders.values[0]);
+    return 0;
+}
+
+void bumperCheck()
+{
+    SensorValue bumpers;
+    sensorRead(SensorTypeBFLR, &bumpers);
+    
+    int bumpedIntoSomething = bumpers.values[0] || bumpers.values[1];
+    if (bumpedIntoSomething) {
+        driveRobot(-1.0, 40.0, 1.0);
+    }
+}
+
+void followWall(int side)
+{
+    if (side == RIGHT) {
+        sendCommand("I LR 45 45");
+    }
+    else {
+        sendCommand("I LR -45 -45");
+    }
+    
+    SensorValue frontInfrareds, sideInfrareds;
+    int distanceToWall = 20;
+    
+    while (1)
+    {
+        bumperCheck();
         
-        if (infraredRangeFinders.values[0] > minimumDistance) {
-            // Turn left
-            turnRobot(-5);
+        sensorRead(SensorTypeIFLR, &frontInfrareds);
+        sensorRead(SensorTypeISLR, &sideInfrareds);
+        
+        infraredsToDist(&frontInfrareds, SensorTypeIFLR);
+        infraredsToDist(&sideInfrareds, SensorTypeISLR);
+        
+        if (frontInfrareds.values[!side] < 40) {
+            turnRobot(10 * (side == RIGHT ? -1 : 1));
         }
-        else if (infraredRangeFinders.values[0] < maximumDistance) {
-            // Turn right
-            turnRobot(5);
+        else
+        {
+            int frontDistance = frontInfrareds.values[side];
+            int sideDistance = sideInfrareds.values[side];
+            
+            int minDistance = MIN(frontDistance, sideDistance);
+            int outOfRange = minDistance >= 40;
+            
+            double ratio;
+            if (side == RIGHT) {
+                ratio = (double)frontDistance/(double)sideDistance;
+            }
+            else {
+                ratio = (double)sideDistance/(double)frontDistance;
+            }
+            
+            ratio += ((minDistance-distanceToWall)/25.0) * (side == LEFT ? -1 : 1);
+            
+            if (outOfRange) {
+                ratio = 1.0;
+            }
+            
+            driveRobot(0.1, 40, ratio);
         }
-        
-        driveRobot(0.25, 20, 1.0);
-        
-    }    
+    }
 }
 
 int main()
@@ -32,12 +97,5 @@ int main()
     //setIPAndPort("128.16.80.185", 55443);
 	connectAndGetSocket();
     
-    /*turnRobot(90);
-    driveRobot(9.0, 127, 1.0);
-    turnRobot(225);
-    driveRobot(1.0, 127, 1.0);
-    */
-    //followWall();
-    
-    turnRobot(-90);
+    followWall(LEFT);
 }

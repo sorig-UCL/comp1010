@@ -7,7 +7,9 @@
 #include <sys/select.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <math.h>
 #include "APIWrapper.h"
+
 
 // String literals
 static const char sensorNames[][24] = {"IFL", "IFR", "ISL", "ISR", "US", "BFL", "BFR", "V", "MEL", "MER", "MCL", "MCR", "IBL", "IBC", "IBR", "IFLR", "ISLR", "BFLR", "MELR", "MCLR", "IBLC", "IBCR", "IBLR", "IBLCR"};
@@ -107,10 +109,10 @@ void driveRobot(double wheelTurns, int speed, double turnRatio)
     
     currentME = initialME;
     
-    int leftSpeed = (turnRatio < 1.0 ? speed/turnRatio : speed);
-    int rightSpeed = (turnRatio > 1.0 ? speed/turnRatio : speed);
+    int leftSpeed = (int)(turnRatio < 1.0 ? (double)speed*turnRatio : speed) * (wheelTurns < 0.0 ? -1 : 1);
+    int rightSpeed = (int)(turnRatio > 1.0 ? (double)speed/turnRatio : speed) * (wheelTurns < 0.0 ? -1 : 1);
     
-    while (minimumSensorDifference(initialME, currentME) <= wheelTurns*360.0)
+    while (minimumSensorDifference(initialME, currentME) <= fabs(wheelTurns)*360.0)
     {
         sprintf(buf, "M LR %i %i\n", leftSpeed, rightSpeed);
         write(sock, buf, strlen(buf));

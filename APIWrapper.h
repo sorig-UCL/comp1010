@@ -20,8 +20,8 @@ typedef enum {
     SensorTypeIBL,      // Infrared reflectometer, Bottom Left
     SensorTypeIBC,      // Infrared reflectometer, Bottom Centre
     SensorTypeIBR,      // Infrared reflectometer, Bottom Right
-    SensorTypeIFLR,     // Infrared rangefinders, Front Left and Right
-    SensorTypeISLR,     // Infrared rangefinder, Side Left and Right
+    SensorTypeIFLR,     // Infrared rangefinders, Front Left and Front Right
+    SensorTypeISLR,     // Infrared rangefinder, Side Left and Side Right
     SensorTypeBFLR,     // Bumper, Front Left and Right
     SensorTypeMELR,     // Motor Encoders, Left and Right
     SensorTypeMCLR,     // Motor Current, Left and Right
