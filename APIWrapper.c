@@ -21,6 +21,7 @@ void clearInputStream();
 SensorValue parseValueString(char *str);
 double avarageSensorDifference(SensorValue a, SensorValue b);
 int minimumSensorDifference(SensorValue a, SensorValue b);
+int maximumSensorDifference(SensorValue a, SensorValue b);
 
 #define BUF_SIZE 80
 int sock = -1;
@@ -112,7 +113,7 @@ void driveRobot(double wheelTurns, int speed, double turnRatio)
     int leftSpeed = (int)(turnRatio < 1.0 ? (double)speed*turnRatio : speed) * (wheelTurns < 0.0 ? -1 : 1);
     int rightSpeed = (int)(turnRatio > 1.0 ? (double)speed/turnRatio : speed) * (wheelTurns < 0.0 ? -1 : 1);
     
-    while (minimumSensorDifference(initialME, currentME) <= fabs(wheelTurns)*360.0)
+    while (maximumSensorDifference(initialME, currentME) <= fabs(wheelTurns)*360.0)
     {
         sprintf(buf, "M LR %i %i\n", leftSpeed, rightSpeed);
         write(sock, buf, strlen(buf));
@@ -362,4 +363,17 @@ int minimumSensorDifference(SensorValue a, SensorValue b)
     }
     
     return minDifference;
+}
+
+int maximumSensorDifference(SensorValue a, SensorValue b)
+{
+    int i, maxDifference = 0;
+    int length = a.length < b.length ? a.length : b.length;
+    
+    for (i = 0; i < length; i++) {
+        int difference = abs(a.values[i] - b.values[i]);
+        maxDifference = (difference > maxDifference ? difference : maxDifference);
+    }
+    
+    return maxDifference;
 }

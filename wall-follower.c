@@ -49,6 +49,8 @@ void bumperCheck(int side)
 
 void followWall(int side)
 {
+    int stopAndSearchDistance = 40;
+    
     if (side == RIGHT) {
         sendCommand("I LR 45 45");
     }
@@ -69,7 +71,7 @@ void followWall(int side)
         infraredsToDist(&frontInfrareds, SensorTypeIFLR);
         infraredsToDist(&sideInfrareds, SensorTypeISLR);
         
-        if (frontInfrareds.values[!side] < 40) {
+        if (frontInfrareds.values[!side] < stopAndSearchDistance) {
             turnRobot(10 * (side == RIGHT ? -1 : 1));
         }
         else
@@ -88,6 +90,7 @@ void followWall(int side)
                 ratio = (double)sideDistance/(double)frontDistance;
             }
             
+            // Stabilise the distance to the wall around the specified value (e.g. 20 cm)
             ratio += ((minDistance-distanceToWall)/25.0) * (side == LEFT ? -1 : 1);
             
             if (outOfRange) {
