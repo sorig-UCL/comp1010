@@ -29,7 +29,7 @@ int infraredsToDist(SensorValue *sensorValue, SensorType type)
     return 0;
 }
 
-void bumperCheck()
+void bumperCheck(int side)
 {
     SensorValue bumpers;
     sensorRead(SensorTypeBFLR, &bumpers);
@@ -37,6 +37,13 @@ void bumperCheck()
     int bumpedIntoSomething = bumpers.values[0] || bumpers.values[1];
     if (bumpedIntoSomething) {
         driveRobot(-1.0, 40.0, 1.0);
+        
+        if (side == RIGHT) {
+            turnRobot(-45);
+        }
+        else {
+            turnRobot(45);
+        }
     }
 }
 
@@ -54,7 +61,7 @@ void followWall(int side)
     
     while (1)
     {
-        bumperCheck();
+        bumperCheck(side);
         
         sensorRead(SensorTypeIFLR, &frontInfrareds);
         sensorRead(SensorTypeISLR, &sideInfrareds);
