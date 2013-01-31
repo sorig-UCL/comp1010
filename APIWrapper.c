@@ -22,6 +22,9 @@ SensorValue parseValueString(char *str);
 double avarageSensorDifference(SensorValue a, SensorValue b);
 int minimumSensorDifference(SensorValue a, SensorValue b);
 int maximumSensorDifference(SensorValue a, SensorValue b);
+int gp2d12_to_dist(int ir); // Front infrared rangefinders
+int gp2d120_to_dist(int ir); // Side infrared rangefinders
+int getUSDist(); // Ultrasound
 
 #define BUF_SIZE 80
 int sock = -1;
@@ -129,6 +132,73 @@ void driveRobot(double wheelTurns, int speed, double turnRatio)
     }
 }
 
+void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorValue **list)
+{
+    char buf[BUF_SIZE];
+    SensorValue initialME, currentME;
+    
+    sensorRead(SensorTypeMELR, &initialME);
+    
+    currentME = initialME;
+    
+    int leftSpeed = (int)(turnRatio < 1.0 ? (double)speed*turnRatio : speed) * (wheelTurns < 0.0 ? -1 : 1);
+    int rightSpeed = (int)(turnRatio > 1.0 ? (double)speed/turnRatio : speed) * (wheelTurns < 0.0 ? -1 : 1);
+    
+    while (maximumSensorDifference(initialME, currentME) <= fabs(wheelTurns)*360.0)
+    {
+        sprintf(buf, "M LR %i %i\n", leftSpeed, rightSpeed);
+        write(sock, buf, strlen(buf));
+        memset(buf, 0, BUF_SIZE);
+        read(sock, buf, BUF_SIZE);
+        
+        sprintf(buf, "C TRAIL\n");
+        write(sock, buf, strlen(buf));
+        memset(buf, 0, BUF_SIZE);
+        read(sock, buf, BUF_SIZE);
+        
+        addSensorValue(list, createSensorValue(SensorTypeMELR));
+        currentME = **list;
+    }
+}
+
+#define LEFT 1
+#define RIGHT 0
+
+void playBackRecording(SensorValue **list)
+{
+    SensorValue currentME, initialME;
+    sensorRead(SensorTypeMELR, &initialME);
+    
+    turnRobot(180);
+    sendCommand("C RME");
+    
+    sensorRead(SensorTypeMELR, &currentME);
+    
+    while (*list)
+    {
+        int rightUnfinished = initialME.values[RIGHT] - currentME.values[LEFT] > (*list)->values[RIGHT];
+        int leftUnfinished = initialME.values[LEFT] - currentME.values[RIGHT] > (*list)->values[LEFT];
+        while (rightUnfinished || leftUnfinished)
+        {
+            rightUnfinished = initialME.values[RIGHT] - currentME.values[LEFT] > (*list)->values[RIGHT];
+            leftUnfinished = initialME.values[LEFT] - currentME.values[RIGHT] > (*list)->values[LEFT];
+            
+            printf("right: %i > %i\n", initialME.values[RIGHT] - currentME.values[LEFT], (*list)->values[RIGHT]);
+            printf("left: %i > %i\n", initialME.values[LEFT] - currentME.values[RIGHT], (*list)->values[LEFT]);
+            
+            int leftSpeed = 10 * (rightUnfinished ? 1 : 0);
+            int rightSpeed = 10 * (leftUnfinished ? 1 : 0);
+            
+            char command[80];
+            sprintf(command, "M LR %i %i\n", leftSpeed, rightSpeed);
+            sendCommand(command);
+            
+            sensorRead(SensorTypeMELR, &currentME);
+        }
+        *list = (*list)->next;
+    }
+}
+
 void stopMotorsAndWait(int seconds)
 {
     char buf[BUF_SIZE];
@@ -224,22 +294,70 @@ int sendCommand(char *command)
     }
 }
 
-int gp2d12_to_dist(int ir) {
-    int dist;
-    if (ir > 35)
-        dist = (6787 / (ir - 3)) - 4;
+void infraredsToDist(SensorValue *sensorValue, SensorType type)
+{
+    int (*converterFunction)(int);
+    if (type == SensorTypeIFLR)
+    {
+        converterFunction = &gp2d12_to_dist;
+    }
+    else if (type == SensorTypeISLR)
+    {
+        converterFunction = &gp2d120_to_dist;
+    }
     else
-        dist=200;
-    return dist;
+    {
+        return;
+    }
+    
+    int i;
+    for (i = 0; i < sensorValue->length; i++) {
+        sensorValue->values[i] = (*converterFunction)(sensorValue->values[i]);
+    }
 }
 
-int gp2d120_to_dist(int ir) {
-    int dist;
-    if (ir > 80)
-        dist = (2914 / (ir + 5)) - 1;
-    else
-        dist = 40;
-    return dist;
+// SensorValue data structure
+SensorValue *createSensorValue(SensorType type)
+{
+    SensorValue *sensorValue = (SensorValue *)malloc(sizeof(SensorValue));
+    
+    sensorRead(type, sensorValue);
+    
+    return sensorValue;
+}
+
+void addSensorValue(SensorValue **list, SensorValue *newValue)
+{
+    newValue->next = *list;
+    *list = newValue;
+}
+
+void deleteSensorValue(SensorValue *sensorValue)
+{
+    free(sensorValue->values);
+    free(sensorValue);
+}
+
+void tokensDelete(SensorValue *list)
+{
+    SensorValue *sensorValue = list;
+    SensorValue *next;
+    while(sensorValue)
+    {
+        next = sensorValue->next;
+        deleteSensorValue(sensorValue);
+        sensorValue = next;
+    }
+}
+
+void printList(SensorValue *list)
+{
+    SensorValue *current = list;
+    while (current)
+    {
+        printf("MER: %i, MEL: %i\n", current->values[0], current->values[1]);
+        current = current->next;
+    }
 }
 
 // Private functions
@@ -376,4 +494,22 @@ int maximumSensorDifference(SensorValue a, SensorValue b)
     }
     
     return maxDifference;
+}
+
+int gp2d12_to_dist(int ir) {
+    int dist;
+    if (ir > 35)
+        dist = (6787 / (ir - 3)) - 4;
+    else
+        dist=200;
+    return dist;
+}
+
+int gp2d120_to_dist(int ir) {
+    int dist;
+    if (ir > 80)
+        dist = (2914 / (ir + 5)) - 1;
+    else
+        dist = 40;
+    return dist;
 }

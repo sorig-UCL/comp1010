@@ -1,7 +1,9 @@
 // Sensor type definitions
-typedef struct {
+typedef struct SensorValue {
     int values[3];
     int length;
+    
+    struct SensorValue *next;
 } SensorValue;
 
 typedef enum {
@@ -36,9 +38,17 @@ void setIPAndPort(char *ip, int port);
 int getVoltage();
 int sensorRead(SensorType type, SensorValue *value);
 int sendCommand(char *command);
-int gp2d12_to_dist(int ir); // Front infrared rangefinders
-int gp2d120_to_dist(int ir); // Side infrared rangefinders
+void infraredsToDist(SensorValue *sensorValue, SensorType type); // Currently only supports SensorTypeIFLR and SensorTypeISLR
 
 void turnRobot(int degrees);
 void driveRobot(double wheelTurns, int speed, double turnRatio);
+void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorValue **list);
+void playBackRecording(SensorValue **list);
 void stopMotorsAndWait(int seconds);
+
+// SensorValue linked list data structure
+SensorValue *createSensorValue(SensorType type);
+void addSensorValue(SensorValue **list, SensorValue *newValue);
+void deleteSensorValue(SensorValue *sensorValue);
+void tokensDelete(SensorValue *list);
+void printList(SensorValue *list);

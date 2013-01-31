@@ -5,30 +5,6 @@
 #define RIGHT 0
 #define MIN(A, B) (A < B ? A : B)
 
-int infraredsToDist(SensorValue *sensorValue, SensorType type)
-{
-    int (*converterFunction)(int);
-    if (type == SensorTypeIFLR)
-    {
-        converterFunction = &gp2d12_to_dist;
-    }
-    else if (type == SensorTypeISLR)
-    {
-        converterFunction = &gp2d120_to_dist;
-    }
-    else
-    {
-        return -1;
-    }
-    
-    int i;
-    for (i = 0; i < sensorValue->length; i++) {
-        sensorValue->values[i] = (*converterFunction)(sensorValue->values[i]);
-    }
-    
-    return 0;
-}
-
 void bumperCheck(int side)
 {
     SensorValue bumpers;
@@ -49,6 +25,8 @@ void bumperCheck(int side)
 
 void followWall(int side)
 {
+    SensorValue *list = NULL;
+    
     int stopAndSearchDistance = 30;
     
     if (side == RIGHT) {
@@ -72,7 +50,11 @@ void followWall(int side)
         infraredsToDist(&sideInfrareds, SensorTypeISLR);
         
         if (frontInfrareds.values[!side] < stopAndSearchDistance) {
-            turnRobot(10 * (side == RIGHT ? -1 : 1));
+            //turnRobot(10 * (side == RIGHT ? -1 : 1));
+            // Go back
+            printList(list);
+            playBackRecording(&list);
+            break;
         }
         else
         {
@@ -97,7 +79,8 @@ void followWall(int side)
                 ratio = 1.0;
             }
             
-            driveRobot(0.01, 10, ratio);
+            //driveRobot(0.01, 10, ratio);
+            driveRobotAndRecord(0.01, 10, ratio, &list);
         }
     }
 }
