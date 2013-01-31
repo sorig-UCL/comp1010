@@ -49,7 +49,7 @@ void bumperCheck(int side)
 
 void followWall(int side)
 {
-    int stopAndSearchDistance = 40;
+    int stopAndSearchDistance = 30;
     
     if (side == RIGHT) {
         sendCommand("I LR 45 45");
@@ -92,12 +92,12 @@ void followWall(int side)
             
             // Stabilise the distance to the wall around the specified value (e.g. 20 cm)
             ratio += ((minDistance-distanceToWall)/25.0) * (side == LEFT ? -1 : 1);
-            
+                        
             if (outOfRange) {
                 ratio = 1.0;
             }
             
-            driveRobot(0.1, 40, ratio);
+            driveRobot(0.01, 10, ratio);
         }
     }
 }
