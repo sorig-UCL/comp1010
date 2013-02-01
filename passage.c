@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "APIWrapper.h"
 
-#define LEFT 1
-#define RIGHT 0
 #define MIN(A, B) (A < B ? A : B)
 #define MAX(A, B) (A > B ? A : B)
 
@@ -26,50 +24,26 @@ void bumperCheck(int side)
 
 void goThroughPassage()
 {    
-    sendCommand("I LR -20 20");
+    sendCommand("I LR -25 25");
     
-    SensorValue frontInfrareds, sideInfrareds, ultraSound;
+    SensorValue frontInfrareds, ultraSound;
+    SensorValue *list = NULL;
     
+    sensorRead(SensorTypeUS, &ultraSound);
     
-    while (ultraSound.values[0] > 10)
-    {
-        //bumperCheck(side);
-        
+    while (ultraSound.values[0] > 20)
+    {        
         sensorRead(SensorTypeIFLR, &frontInfrareds);
-        sensorRead(SensorTypeISLR, &sideInfrareds);
+        sensorRead(SensorTypeUS, &ultraSound);
         
         infraredsToDist(&frontInfrareds, SensorTypeIFLR);
-        infraredsToDist(&sideInfrareds, SensorTypeISLR);
         
-        double rightAverageDist = (frontInfrareds.values[RIGHT] + sideInfrareds.values[RIGHT]) / 2.0;
-        double leftAverageDist = (frontInfrareds.values[LEFT] + sideInfrareds.values[LEFT]) / 2.0;
+        double ratio = (double)frontInfrareds.values[RIGHT] / (double)frontInfrareds.values[LEFT];
         
-        double ratio = rightAverageDist / leftAverageDist;
-                
-        /*int frontDistance = frontInfrareds.values[side];
-        int sideDistance = sideInfrareds.values[side];
-        
-        int minDistance = MIN(frontDistance, sideDistance);
-        int outOfRange = minDistance >= 40;
-        
-        double ratio;
-        if (side == RIGHT) {
-            ratio = (double)frontDistance/(double)sideDistance;
-        }
-        else {
-            ratio = (double)sideDistance/(double)frontDistance;
-        }
-        
-        // Stabilise the distance to the wall around the specified value (e.g. 20 cm)
-        ratio += ((minDistance-distanceToWall)/25.0) * (side == LEFT ? -1 : 1);
-        
-        if (outOfRange) {
-            ratio = 1.0;
-        }*/
-        
-        driveRobot(0.01, 10, ratio);
-        
+        driveRobotAndRecord(0.001, 40, ratio, &list);
     }
+    
+    playBackRecording(&list, 40);
 }
 
 int main()

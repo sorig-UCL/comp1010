@@ -33,6 +33,9 @@ typedef enum {
     SensorTypeIBLCR     // Infrared reflectometer, Bottom Left, Centre and Right
 } SensorType;
 
+#define LEFT 0
+#define RIGHT 1
+
 int connectAndGetSocket();
 void setIPAndPort(char *ip, int port);
 int getVoltage();
@@ -43,7 +46,7 @@ void infraredsToDist(SensorValue *sensorValue, SensorType type); // Currently on
 void turnRobot(int degrees);
 void driveRobot(double wheelTurns, int speed, double turnRatio);
 void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorValue **list);
-void playBackRecording(SensorValue **list);
+void playBackRecording(SensorValue **list, int speed);
 void stopMotorsAndWait(int seconds);
 
 // SensorValue linked list data structure

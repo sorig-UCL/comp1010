@@ -19,6 +19,7 @@ int sendMsg(char* msg);
 int recvMsg(char *buf);
 void clearInputStream();
 SensorValue parseValueString(char *str);
+SensorValue reverseValueOrder(SensorValue someValue);
 double avarageSensorDifference(SensorValue a, SensorValue b);
 int minimumSensorDifference(SensorValue a, SensorValue b);
 int maximumSensorDifference(SensorValue a, SensorValue b);
@@ -161,10 +162,7 @@ void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorV
     }
 }
 
-#define LEFT 1
-#define RIGHT 0
-
-void playBackRecording(SensorValue **list)
+void playBackRecording(SensorValue **list, int speed)
 {
     SensorValue currentME, initialME;
     sensorRead(SensorTypeMELR, &initialME);
@@ -176,25 +174,22 @@ void playBackRecording(SensorValue **list)
     
     while (*list)
     {
-        int rightUnfinished = initialME.values[RIGHT] - currentME.values[LEFT] > (*list)->values[RIGHT];
-        int leftUnfinished = initialME.values[LEFT] - currentME.values[RIGHT] > (*list)->values[LEFT];
-        while (rightUnfinished || leftUnfinished)
-        {
+        int rightUnfinished, leftUnfinished;
+        do {
             rightUnfinished = initialME.values[RIGHT] - currentME.values[LEFT] > (*list)->values[RIGHT];
             leftUnfinished = initialME.values[LEFT] - currentME.values[RIGHT] > (*list)->values[LEFT];
             
-            printf("right: %i > %i\n", initialME.values[RIGHT] - currentME.values[LEFT], (*list)->values[RIGHT]);
-            printf("left: %i > %i\n", initialME.values[LEFT] - currentME.values[RIGHT], (*list)->values[LEFT]);
+            int leftSpeed = speed * (rightUnfinished ? 1 : 0);
+            int rightSpeed = speed * (leftUnfinished ? 1 : 0);
             
-            int leftSpeed = 10 * (rightUnfinished ? 1 : 0);
-            int rightSpeed = 10 * (leftUnfinished ? 1 : 0);
-            
-            char command[80];
-            sprintf(command, "M LR %i %i\n", leftSpeed, rightSpeed);
+            char command[BUF_SIZE];
+            sprintf(command, "M LR %i %i", leftSpeed, rightSpeed);
             sendCommand(command);
             
             sensorRead(SensorTypeMELR, &currentME);
-        }
+            
+        } while (rightUnfinished || leftUnfinished);
+        
         *list = (*list)->next;
     }
 }
@@ -455,7 +450,20 @@ SensorValue parseValueString(char *str)
         result.length++;
     }
     
-    return result;
+    return reverseValueOrder(result);
+}
+
+SensorValue reverseValueOrder(SensorValue someValue)
+{
+    SensorValue reversedValue;
+    reversedValue.length = someValue.length;
+    
+    int i;
+    for (i = someValue.length-1; i >= 0; i--) {
+        reversedValue.values[someValue.length-i-1] = someValue.values[i];
+    }
+    
+    return reversedValue;
 }
 
 double avarageSensorDifference(SensorValue a, SensorValue b)

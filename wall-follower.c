@@ -1,8 +1,6 @@
 #include <stdio.h>
 #include "APIWrapper.h"
 
-#define LEFT 1
-#define RIGHT 0
 #define MIN(A, B) (A < B ? A : B)
 
 void bumperCheck(int side)
@@ -24,9 +22,7 @@ void bumperCheck(int side)
 }
 
 void followWall(int side)
-{
-    SensorValue *list = NULL;
-    
+{    
     int stopAndSearchDistance = 30;
     
     if (side == RIGHT) {
@@ -50,11 +46,7 @@ void followWall(int side)
         infraredsToDist(&sideInfrareds, SensorTypeISLR);
         
         if (frontInfrareds.values[!side] < stopAndSearchDistance) {
-            //turnRobot(10 * (side == RIGHT ? -1 : 1));
-            // Go back
-            printList(list);
-            playBackRecording(&list);
-            break;
+            turnRobot(10 * (side == RIGHT ? -1 : 1));
         }
         else
         {
@@ -79,8 +71,7 @@ void followWall(int side)
                 ratio = 1.0;
             }
             
-            //driveRobot(0.01, 10, ratio);
-            driveRobotAndRecord(0.01, 10, ratio, &list);
+            driveRobot(0.01, 10, ratio);
         }
     }
 }
