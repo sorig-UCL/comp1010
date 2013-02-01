@@ -71,15 +71,17 @@ void followWall(int side)
                 ratio = 1.0;
             }
             
-            driveRobot(0.01, 10, ratio);
+            driveRobot(0.01, 40, ratio);
         }
     }
 }
 
 int main()
 {
-    //setIPAndPort("128.16.80.185", 55443);
+    //setIPAndPort("128.16.79.9", 55443);
 	connectAndGetSocket();
-    
-    followWall(LEFT);
+    sleep(2);
+    followWall(RIGHT);
+    //sendCommand("I LR -45 -45");
+    //sendCommand("I R -45");
 }

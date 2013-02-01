@@ -119,15 +119,8 @@ void driveRobot(double wheelTurns, int speed, double turnRatio)
     
     while (maximumSensorDifference(initialME, currentME) <= fabs(wheelTurns)*360.0)
     {
-        sprintf(buf, "M LR %i %i\n", leftSpeed, rightSpeed);
-        write(sock, buf, strlen(buf));
-        memset(buf, 0, BUF_SIZE);
-        read(sock, buf, BUF_SIZE);
-        
-        sprintf(buf, "C TRAIL\n");
-        write(sock, buf, strlen(buf));
-        memset(buf, 0, BUF_SIZE);
-        read(sock, buf, BUF_SIZE);
+        sprintf(buf, "M LR %i %i", leftSpeed, rightSpeed);
+        sendCommand(buf);
         
         sensorRead(SensorTypeMELR, &currentME);
     }
@@ -147,15 +140,8 @@ void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorV
     
     while (maximumSensorDifference(initialME, currentME) <= fabs(wheelTurns)*360.0)
     {
-        sprintf(buf, "M LR %i %i\n", leftSpeed, rightSpeed);
-        write(sock, buf, strlen(buf));
-        memset(buf, 0, BUF_SIZE);
-        read(sock, buf, BUF_SIZE);
-        
-        sprintf(buf, "C TRAIL\n");
-        write(sock, buf, strlen(buf));
-        memset(buf, 0, BUF_SIZE);
-        read(sock, buf, BUF_SIZE);
+        sprintf(buf, "M LR %i %i", leftSpeed, rightSpeed);
+        sendCommand(buf);
         
         addSensorValue(list, createSensorValue(SensorTypeMELR));
         currentME = **list;
@@ -195,16 +181,11 @@ void playBackRecording(SensorValue **list, int speed)
 }
 
 void stopMotorsAndWait(int seconds)
-{
-    char buf[BUF_SIZE];
-    
+{    
     time_t startTime = time(NULL);
     while (time(NULL) - startTime <= seconds)
     {
-        sprintf(buf, "M LR 0 0\n");
-        write(sock, buf, strlen(buf));
-        memset(buf, 0, BUF_SIZE);
-        read(sock, buf, BUF_SIZE);
+        sendCommand("M LR 0 0");
     }
 }
 
@@ -223,7 +204,10 @@ int sensorRead(SensorType type, SensorValue *value) {
             
             /* remove the trailing newline from the request string so we can
              compare it to the response */
-            sendbuf[strlen(sendbuf)-1]='\0';
+            if (sendbuf[strlen(sendbuf)-1] == '\n') {
+                sendbuf[strlen(sendbuf)-1]='\0';
+            }
+            
             if (strncmp(recvbuf, sendbuf, strlen(sendbuf))==0) {
                 
                 /* skip over the fixed part of the response to get to the
@@ -266,7 +250,10 @@ int sendCommand(char *command)
             
             /* remove the trailing newline from the request string so we can
              compare it to the response */
-            sendbuf[strlen(sendbuf)-1]='\0';
+            if (sendbuf[strlen(sendbuf)-1] == '\n') {
+                sendbuf[strlen(sendbuf)-1]='\0';
+            }
+            
             if (strncmp(recvbuf, ".", 1)==0) {
                 /* all done */
                 return 0;
@@ -374,7 +361,7 @@ int recvMsg(char *buf) {
     fd_set read_fdset;
     fd_set except_fdset;
     struct timeval tv;
-    tv.tv_sec = 5;
+    tv.tv_sec = 2;
     tv.tv_usec = 0;
     FD_ZERO(&read_fdset);
     FD_ZERO(&except_fdset);

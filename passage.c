@@ -1,26 +1,9 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "APIWrapper.h"
 
 #define MIN(A, B) (A < B ? A : B)
 #define MAX(A, B) (A > B ? A : B)
-
-void bumperCheck(int side)
-{
-    SensorValue bumpers;
-    sensorRead(SensorTypeBFLR, &bumpers);
-    
-    int bumpedIntoSomething = bumpers.values[0] || bumpers.values[1];
-    if (bumpedIntoSomething) {
-        driveRobot(-1.0, 40.0, 1.0);
-        
-        if (side == RIGHT) {
-            turnRobot(-45);
-        }
-        else {
-            turnRobot(45);
-        }
-    }
-}
 
 void goThroughPassage()
 {    
@@ -31,8 +14,8 @@ void goThroughPassage()
     
     sensorRead(SensorTypeUS, &ultraSound);
     
-    while (ultraSound.values[0] > 20)
-    {        
+    while (ultraSound.values[0] > 30)
+    {
         sensorRead(SensorTypeIFLR, &frontInfrareds);
         sensorRead(SensorTypeUS, &ultraSound);
         
@@ -40,16 +23,19 @@ void goThroughPassage()
         
         double ratio = (double)frontInfrareds.values[RIGHT] / (double)frontInfrareds.values[LEFT];
         
-        driveRobotAndRecord(0.001, 40, ratio, &list);
+        driveRobotAndRecord(0.001, 20, ratio, &list);
     }
     
-    playBackRecording(&list, 40);
+    playBackRecording(&list, 10);
 }
 
 int main()
 {
-    //setIPAndPort("128.16.80.185", 55443);
+    //setIPAndPort("128.16.79.9", 55443);
 	connectAndGetSocket();
     
+    sleep(2);
+    
+    //driveRobot(1.0, 20, 1.0);
     goThroughPassage();
 }
