@@ -3,6 +3,12 @@
 
 #define MIN(A, B) (A < B ? A : B)
 
+typedef enum {
+    WorldStateWallLeft = 1 << 0,
+    WorldStateWallRight = 1 << 1,
+    WorldStateWallFront = 1 << 2
+} WorldState;
+
 void bumperCheck(int side)
 {
     SensorValue bumpers;
@@ -71,7 +77,7 @@ void followWall(int side)
                 ratio = 1.0;
             }
             
-            driveRobot(0.01, 40, ratio);
+            driveRobot(0.01, 50, ratio);
         }
     }
 }

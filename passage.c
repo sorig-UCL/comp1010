@@ -7,6 +7,7 @@
 
 void goThroughPassage()
 {    
+    sendCommand("C RME");
     sendCommand("I LR -25 25");
     
     SensorValue frontInfrareds, ultraSound;
@@ -14,7 +15,7 @@ void goThroughPassage()
     
     sensorRead(SensorTypeUS, &ultraSound);
     
-    while (ultraSound.values[0] > 30)
+    while (ultraSound.values[0] > 27)
     {
         sensorRead(SensorTypeIFLR, &frontInfrareds);
         sensorRead(SensorTypeUS, &ultraSound);
@@ -23,10 +24,13 @@ void goThroughPassage()
         
         double ratio = (double)frontInfrareds.values[RIGHT] / (double)frontInfrareds.values[LEFT];
         
-        driveRobotAndRecord(0.001, 20, ratio, &list);
+        driveRobotAndRecord(0.001, 60, ratio, &list);
     }
     
-    playBackRecording(&list, 10);
+    printList(list);
+    
+    stopMotorsAndWait(1);
+    playBackRecording(&list, 20);
 }
 
 int main()
@@ -36,6 +40,5 @@ int main()
     
     sleep(2);
     
-    //driveRobot(1.0, 20, 1.0);
     goThroughPassage();
 }

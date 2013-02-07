@@ -131,7 +131,8 @@ void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorV
     char buf[BUF_SIZE];
     SensorValue initialME, currentME;
     
-    sensorRead(SensorTypeMELR, &initialME);
+    addSensorValue(list, createSensorValue(SensorTypeMELR));
+    initialME = **list;
     
     currentME = initialME;
     
@@ -154,6 +155,7 @@ void playBackRecording(SensorValue **list, int speed)
     sensorRead(SensorTypeMELR, &initialME);
     
     turnRobot(180);
+    stopMotorsAndWait(1);
     sendCommand("C RME");
     
     sensorRead(SensorTypeMELR, &currentME);
@@ -161,16 +163,35 @@ void playBackRecording(SensorValue **list, int speed)
     while (*list)
     {
         int rightUnfinished, leftUnfinished;
+        int leftFinishingME = (*list)->values[RIGHT];
+        int rightFinishingME = (*list)->values[LEFT];
+        
         do {
-            rightUnfinished = initialME.values[RIGHT] - currentME.values[LEFT] > (*list)->values[RIGHT];
-            leftUnfinished = initialME.values[LEFT] - currentME.values[RIGHT] > (*list)->values[LEFT];
+            int leftAdjustedME = initialME.values[RIGHT] - currentME.values[LEFT];
+            int rightAdjustedME = initialME.values[LEFT] - currentME.values[RIGHT];
             
-            int leftSpeed = speed * (rightUnfinished ? 1 : 0);
-            int rightSpeed = speed * (leftUnfinished ? 1 : 0);
+            double ratio = ((double)leftAdjustedME - (double)leftFinishingME) / ((double)rightAdjustedME - (double)rightFinishingME);
             
-            char command[BUF_SIZE];
-            sprintf(command, "M LR %i %i", leftSpeed, rightSpeed);
-            sendCommand(command);
+            int leftSpeed = (ratio > 1.0 ? speed : ratio * speed);
+            int rightSpeed = (ratio > 1.0 ? speed / ratio : speed);
+            
+            leftUnfinished = leftAdjustedME > leftFinishingME;
+            rightUnfinished = rightAdjustedME > rightFinishingME;
+            
+            if (!leftUnfinished || !rightUnfinished) {
+                leftSpeed = speed;
+                rightSpeed = speed;
+            }
+            
+            if (leftUnfinished || rightUnfinished)
+            {
+                leftSpeed = leftSpeed * (leftUnfinished ? 1 : 0);
+                rightSpeed = rightSpeed * (rightUnfinished ? 1 : 0);
+                
+                char command[BUF_SIZE];
+                sprintf(command, "M LR %i %i", leftSpeed, rightSpeed);
+                sendCommand(command);
+            }            
             
             sensorRead(SensorTypeMELR, &currentME);
             
