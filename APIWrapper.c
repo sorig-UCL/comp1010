@@ -91,16 +91,17 @@ void turnRobot(int degrees)
     
     // 6.79/3.0 - Works well without delay after driving forwards
     // 7.1/3.0  - Works well with delay after driving forwards
-    while (avarageSensorDifference(initialME, currentME) <= abs(degrees * (7.0/3.0)))
-    {
+    while (avarageSensorDifference(initialME, currentME) < fabs(degrees * (2.36)))
+    {        
         int speed = 1 * (degrees/abs(degrees));
-        sprintf(buf, "M LR %i %i\n", speed, -speed);
-        write(sock, buf, strlen(buf));
-        memset(buf, 0, BUF_SIZE);
-        read(sock, buf, BUF_SIZE);
+        sprintf(buf, "M LR %i %i", speed, -speed);
+        sendCommand(buf);        
         
         sensorRead(SensorTypeMELR, &currentME);
     }
+    
+    // Stop the robot - important!
+    sendCommand("M LR 0 0");
 }
 
 

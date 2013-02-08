@@ -82,6 +82,32 @@ void followWall(int side)
     }
 }
 
+WorldState getWorldState()
+{
+    SensorValue frontIR, sideIR, ultraSound;
+    
+    sensorRead(SensorTypeIFLR, &frontIR);
+    sensorRead(SensorTypeISLR, &sideIR);
+    sensorRead(SensorTypeUS, &ultraSound);
+    
+    
+}
+
+void reactiveRobotProgram()
+{
+    // prevState, state
+    WorldState currentState, previousState;
+    
+    while (1) {
+        // update the states
+        // If wall on side -> no wall: turn in direction of wall untill it is found
+        // If passage -> no wall: turn in either direction untill a wall is found
+        // no wall: go straight
+        // wall on side: follow wall
+        // Wall
+    }
+}
+
 int main()
 {
     //setIPAndPort("128.16.79.9", 55443);
