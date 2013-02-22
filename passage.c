@@ -15,7 +15,7 @@ void goThroughPassage()
     
     sensorRead(SensorTypeUS, &ultraSound);
     
-    while (ultraSound.values[0] > 27)
+    while (ultraSound.values[0] > 30)
     {
         sensorRead(SensorTypeIFLR, &frontInfrareds);
         sensorRead(SensorTypeUS, &ultraSound);
@@ -24,7 +24,7 @@ void goThroughPassage()
         
         double ratio = (double)frontInfrareds.values[RIGHT] / (double)frontInfrareds.values[LEFT];
         
-        driveRobotAndRecord(0.001, 60, ratio, &list);
+        driveRobotAndRecord(0.001, 40, ratio, &list);
     }
     
     printList(list);
@@ -35,7 +35,7 @@ void goThroughPassage()
 
 int main()
 {
-    //setIPAndPort("128.16.79.9", 55443);
+    setIPAndPort("128.16.79.5", 55443);
 	connectAndGetSocket();
     
     sleep(2);
