@@ -50,8 +50,10 @@ void playBackRecording(SensorValue **list, int speed);
 void stopMotorsAndWait(int seconds);
 
 // SensorValue linked list data structure
-SensorValue *createSensorValue(SensorType type);
+SensorValue* createSensorValue();
+SensorValue* createSensorValueAndRecord(SensorType type);
 void addSensorValue(SensorValue **list, SensorValue *newValue);
 void deleteSensorValue(SensorValue *sensorValue);
-void tokensDelete(SensorValue *list);
+void listDelete(SensorValue *list);
+void reverseList(SensorValue **list);
 void printList(SensorValue *list);

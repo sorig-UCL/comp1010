@@ -132,7 +132,7 @@ void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorV
     char buf[BUF_SIZE];
     SensorValue initialME, currentME;
     
-    addSensorValue(list, createSensorValue(SensorTypeMELR));
+    addSensorValue(list, createSensorValueAndRecord(SensorTypeMELR));
     initialME = **list;
     
     currentME = initialME;
@@ -145,12 +145,12 @@ void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorV
         sprintf(buf, "M LR %i %i", leftSpeed, rightSpeed);
         sendCommand(buf);
         
-        addSensorValue(list, createSensorValue(SensorTypeMELR));
+        addSensorValue(list, createSensorValueAndRecord(SensorTypeMELR));
         currentME = **list;
     }
 }
 
-void playBackRecording(SensorValue **list, int speed)
+/*void playBackRecording(SensorValue **list, int speed)
 {
     SensorValue currentME, initialME;
     sensorRead(SensorTypeMELR, &initialME);
@@ -193,6 +193,57 @@ void playBackRecording(SensorValue **list, int speed)
                 sprintf(command, "M LR %i %i", leftSpeed, rightSpeed);
                 sendCommand(command);
             }            
+            
+            sensorRead(SensorTypeMELR, &currentME);
+            
+        } while (rightUnfinished || leftUnfinished);
+        
+        *list = (*list)->next;
+    }
+}*/
+
+void playBackRecording(SensorValue **list, int speed)
+{
+    sendCommand("C RME");
+    
+    SensorValue currentME;    
+    sensorRead(SensorTypeMELR, &currentME);
+    
+    while (*list)
+    {
+        int rightUnfinished, leftUnfinished;
+        int leftFinishingME = (*list)->values[LEFT];
+        int rightFinishingME = (*list)->values[RIGHT];
+        
+        do
+        {
+            double ratio = ((double)leftFinishingME - (double)currentME.values[LEFT]) / ((double)rightFinishingME - (double)currentME.values[RIGHT]);
+            
+            // Division by zero
+            if (((double)rightFinishingME - (double)currentME.values[RIGHT]) == 0) {
+                ratio = 1.0;
+            }
+            
+            int leftSpeed = (ratio > 1.0 ? speed : ratio * speed);
+            int rightSpeed = (ratio > 1.0 ? speed / ratio : speed);
+            
+            leftUnfinished = currentME.values[LEFT] < leftFinishingME;
+            rightUnfinished = currentME.values[RIGHT] < rightFinishingME;
+            
+            if (!leftUnfinished || !rightUnfinished) {
+                leftSpeed = speed;
+                rightSpeed = speed;
+            }
+            
+            if (leftUnfinished || rightUnfinished)
+            {
+                leftSpeed = leftSpeed * (leftUnfinished ? 1 : 0);
+                rightSpeed = rightSpeed * (rightUnfinished ? 1 : 0);
+                
+                char command[BUF_SIZE];
+                sprintf(command, "M LR %i %i", leftSpeed, rightSpeed);
+                sendCommand(command);
+            }
             
             sensorRead(SensorTypeMELR, &currentME);
             
@@ -321,9 +372,16 @@ void infraredsToDist(SensorValue *sensorValue, SensorType type)
 }
 
 // SensorValue data structure
-SensorValue *createSensorValue(SensorType type)
+SensorValue* createSensorValue()
 {
     SensorValue *sensorValue = (SensorValue *)malloc(sizeof(SensorValue));
+    
+    return sensorValue;
+}
+
+SensorValue* createSensorValueAndRecord(SensorType type)
+{
+    SensorValue *sensorValue = createSensorValue();
     
     sensorRead(type, sensorValue);
     
@@ -342,7 +400,7 @@ void deleteSensorValue(SensorValue *sensorValue)
     free(sensorValue);
 }
 
-void tokensDelete(SensorValue *list)
+void listDelete(SensorValue *list)
 {
     SensorValue *sensorValue = list;
     SensorValue *next;
@@ -351,6 +409,26 @@ void tokensDelete(SensorValue *list)
         next = sensorValue->next;
         deleteSensorValue(sensorValue);
         sensorValue = next;
+    }
+}
+//  a -> b -> c -> d
+void reverseList(SensorValue **list)
+{
+    SensorValue *prev = NULL;
+    
+    while (*list)
+    {
+        SensorValue *next = (*list)->next;
+        
+        (*list)->next = prev;
+        
+        prev = *list;
+        if (next) {
+            *list = next;
+        }
+        else {
+            break;
+        }        
     }
 }
 
