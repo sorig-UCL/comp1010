@@ -43,6 +43,7 @@ void alignAtLine()
     double distance = 0.0;
     int alignedCount = 0;
     
+    // Drive back and forth till the robot is completely parallel with the walls 
     while (alignedCount < 100 || distance > -0.08)
     {
         sensorRead(SensorTypeIFLR, &frontInfrareds);
@@ -50,7 +51,6 @@ void alignAtLine()
         infraredsToDist(&frontInfrareds, SensorTypeIFLR);
         
         alignedCount = (frontInfrareds.values[RIGHT] == frontInfrareds.values[LEFT] ? alignedCount + 1 : 0);
-        printf("alignmentCount: %i\n", alignedCount);
         
         double ratio = (double)frontInfrareds.values[RIGHT] / (double)frontInfrareds.values[LEFT];
         
@@ -98,7 +98,6 @@ void loop()
     alignAtLine();
     
     reverseList(&pathList);
-    printList(pathList);
     
     stopMotorsAndWait(1);
     playBackRecording(&pathList, 20);
