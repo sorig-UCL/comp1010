@@ -32,7 +32,7 @@ void followWall(int side)
     int stopAndSearchDistance = 30;
     
     if (side == RIGHT) {
-        sendCommand("I LR 45 45");
+        sendCommand("I LR 55 45");
     }
     else {
         sendCommand("I LR -45 -45");
@@ -51,8 +51,9 @@ void followWall(int side)
         infraredsToDist(&frontInfrareds, SensorTypeIFLR);
         infraredsToDist(&sideInfrareds, SensorTypeISLR);
         
-        if (frontInfrareds.values[!side] < stopAndSearchDistance) {
-            turnRobot(10 * (side == RIGHT ? -1 : 1));
+        if (frontInfrareds.values[!side] < stopAndSearchDistance || frontInfrareds.values[side] < 15) {
+            turnRobot(35 * (side == RIGHT ? -1 : 1));
+            driveRobot(0.05, 30, 1.0);
         }
         else
         {
@@ -60,7 +61,7 @@ void followWall(int side)
             int sideDistance = sideInfrareds.values[side];
             
             int minDistance = MIN(frontDistance, sideDistance);
-            int outOfRange = minDistance >= 40;
+            int outOfRange = minDistance >= 60;
             
             double ratio;
             if (side == RIGHT) {
@@ -77,7 +78,7 @@ void followWall(int side)
                 ratio = 1.0;
             }
             
-            driveRobot(0.01, 50, ratio);
+            driveRobot(0.01, 30, ratio);
         }
     }
 }
