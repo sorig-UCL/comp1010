@@ -44,6 +44,7 @@ int sendCommand(char *command);
 void infraredsToDist(SensorValue *sensorValue, SensorType type); // Currently only supports SensorTypeIFLR and SensorTypeISLR
 
 void turnRobot(int degrees);
+void turnAndRecord(int degrees, SensorValue **list);
 void driveRobot(double wheelTurns, int speed, double turnRatio);
 void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorValue **list);
 void playBackRecording(SensorValue **list, int speed);

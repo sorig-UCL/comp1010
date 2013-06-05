@@ -35,7 +35,7 @@ void goThroughPassage()
 
 int main()
 {
-    setIPAndPort("128.16.79.5", 55443);
+    //setIPAndPort("128.16.79.5", 55443);
 	connectAndGetSocket();
     
     sleep(2);

@@ -150,6 +150,33 @@ void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorV
     }
 }
 
+void turnAndRecord(int degrees, SensorValue **list)
+{
+    char buf[BUF_SIZE];
+    
+    SensorValue initialME, currentME;
+    
+    addSensorValue(list, createSensorValueAndRecord(SensorTypeMELR));
+    initialME = **list;
+    
+    currentME = initialME;
+    
+    // 6.79/3.0 - Works well without delay after driving forwards
+    // 7.1/3.0  - Works well with delay after driving forwards
+    while (avarageSensorDifference(initialME, currentME) < fabs(degrees * (2.36)))
+    {
+        int speed = 1 * (degrees/abs(degrees));
+        sprintf(buf, "M LR %i %i", speed, -speed);
+        sendCommand(buf);
+        
+        addSensorValue(list, createSensorValueAndRecord(SensorTypeMELR));
+        currentME = **list;
+    }
+    
+    // Stop the robot - important!
+    sendCommand("M LR 0 0");
+}
+
 /*void playBackRecording(SensorValue **list, int speed)
 {
     SensorValue currentME, initialME;

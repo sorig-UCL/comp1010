@@ -46,7 +46,15 @@ void updateFrontSensorPositions(int side, int frontSideAngle, int stopAndSearchD
  int stopAndSearchDistance = 30;
  */
 
-void followWall(int side, double distance)
+int abs(int a)
+{
+    if (a < 0) {
+        return a * -1;
+    }
+    return a;
+}
+
+void followWall(int side, int degrees)
 {
     int speed = 40;
     int stabilisationDistanceToWall = 15;
@@ -61,12 +69,15 @@ void followWall(int side, double distance)
     SensorValue *list = NULL;
     
     sendCommand("C RME");
+    addSensorValue(&list, createSensorValueAndRecord(SensorTypeMELR));
     
     double wallInFrontWheelTurnCount = 0.0;
     int wallInFrontFlag = 0;
     double length = 0.0;
-    while (length < distance)
-    {        
+    while (abs(list->values[0] - list->values[1]) < (1690.0/360.0)*degrees)
+    {
+        printf("differince %d\n", abs(list->values[0] - list->values[1]));
+        
         bumperCheck(side);
         
         sensorRead(SensorTypeIFLR, &frontInfrareds);
@@ -120,7 +131,7 @@ void followWall(int side, double distance)
             
             ratio = MAX(0.2, ratio);
             ratio = MIN(4.0, ratio);
-                        
+            
             if (outOfRange) {
                 ratio = 1.0;
             }
@@ -137,10 +148,12 @@ int main()
     //setIPAndPort("128.16.79.9", 55443);
 	connectAndGetSocket();
     sleep(2);
-    followWall(RIGHT, 1.2);
-    followWall(LEFT, 1.6);
-    followWall(RIGHT, 1.4);
-    followWall(LEFT, 1.6);
-    //sendCommand("I LR -45 -45");
-    //sendCommand("I R -45");
+    
+    followWall(RIGHT, 270);
+    while (1) {
+        followWall(LEFT, 360);
+        followWall(RIGHT, 360);
+    }
+    
+    
 }
