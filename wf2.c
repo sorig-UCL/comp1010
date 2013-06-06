@@ -56,8 +56,8 @@ int abs(int a)
 
 void followWall(int side, int degrees)
 {
-    int speed = 30;
-    int stabilisationDistanceToWall = 25;
+    int speed = 20;
+    int stabilisationDistanceToWall = 20;
     int frontSideAngle = 0;
     int stopAndSearchDistance = 35;
     int stopAndSearchHypotenuse = sqrt(12.5*12.5+stopAndSearchDistance*stopAndSearchDistance);
@@ -76,8 +76,6 @@ void followWall(int side, int degrees)
     double length = 0.0;
     while (abs(list->values[0] - list->values[1]) < (1690.0/360.0)*degrees)
     {
-        printf("differince %d\n", abs(list->values[0] - list->values[1]));
-        
         bumperCheck(side);
         
         sensorRead(SensorTypeIFLR, &frontInfrareds);
@@ -133,7 +131,7 @@ void followWall(int side, int degrees)
             }
             
             // Stabilise the distance to the wall around the specified value (e.g. 20 cm)
-            ratio += ((minDistance-stabilisationDistanceToWall)/(double)stabilisationDistanceToWall) * (side == LEFT ? -1 : 1);
+            ratio += ((minDistance-stabilisationDistanceToWall)/((double)stabilisationDistanceToWall-5.0)) * (side == LEFT ? -1 : 1);
             
             ratio = MAX(0.1, ratio);
             ratio = MIN(6.0, ratio);
