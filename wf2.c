@@ -15,10 +15,10 @@ void bumperCheck(int side)
         driveRobot(-1.0, 40.0, 1.0);
         
         if (side == RIGHT) {
-            turnRobot(-45);
+            turnRobot(-45, 20);
         }
         else {
-            turnRobot(45);
+            turnRobot(45, 20);
         }
     }
 }
@@ -56,10 +56,10 @@ int abs(int a)
 
 void followWall(int side, int degrees)
 {
-    int speed = 40;
-    int stabilisationDistanceToWall = 15;
-    int frontSideAngle = -15;
-    int stopAndSearchDistance = 30;
+    int speed = 30;
+    int stabilisationDistanceToWall = 25;
+    int frontSideAngle = 0;
+    int stopAndSearchDistance = 35;
     int stopAndSearchHypotenuse = sqrt(12.5*12.5+stopAndSearchDistance*stopAndSearchDistance);
     
     updateFrontSensorPositions(side, frontSideAngle, stopAndSearchDistance);
@@ -90,18 +90,25 @@ void followWall(int side, int degrees)
         int wallInFront = frontInfrareds.values[!side] < stopAndSearchHypotenuse;
         int frontSideTooClose = frontDistanceToWall < stabilisationDistanceToWall/1.5;
         int headedTowardsTheWall = frontDistanceToWall < sideInfrareds.values[side];
+        int wallToTheSide = frontDistanceToWall < 40 || sideInfrareds.values[side] < 40;
         
         // Too close! Do something!
         if (wallInFront || (frontSideTooClose &&  headedTowardsTheWall)) {
-            if (wallInFront) {
+            /*if (wallInFront) {
                 if (!wallInFrontFlag) {
                     updateFrontSensorPositions(side, -2*frontSideAngle, stopAndSearchDistance);
                 }
                 wallInFrontFlag = 1;
                 wallInFrontWheelTurnCount = 0.0;
+            }*/
+            
+            if (wallToTheSide) {
+                turnAndRecord(35 * (side == RIGHT ? -1 : 1), speed/2, &list);
+            }
+            else {
+                turnAndRecord(35 * (side == RIGHT ? 1 : -1), speed/2, &list);
             }
             
-            turnAndRecord(5 * (side == RIGHT ? -1 : 1), &list);
         }
         // Stabilise along wall with ratio
         else
@@ -114,9 +121,8 @@ void followWall(int side, int degrees)
             
             int sideDistanceToWall = sideInfrareds.values[side];
             
-            frontDistanceToWall = MIN(frontDistanceToWall, 50);
             int minDistance = MIN(frontDistanceToWall, sideDistanceToWall);
-            int outOfRange = minDistance >= 50;
+            int outOfRange = minDistance >= 41;
             
             double ratio;
             if (side == RIGHT) {
@@ -129,8 +135,8 @@ void followWall(int side, int degrees)
             // Stabilise the distance to the wall around the specified value (e.g. 20 cm)
             ratio += ((minDistance-stabilisationDistanceToWall)/(double)stabilisationDistanceToWall) * (side == LEFT ? -1 : 1);
             
-            ratio = MAX(0.2, ratio);
-            ratio = MIN(4.0, ratio);
+            ratio = MAX(0.1, ratio);
+            ratio = MIN(6.0, ratio);
             
             if (outOfRange) {
                 ratio = 1.0;
@@ -145,7 +151,7 @@ void followWall(int side, int degrees)
 
 int main()
 {
-    //setIPAndPort("128.16.79.9", 55443);
+    //setIPAndPort("128.16.79.10", 55443);
 	connectAndGetSocket();
     sleep(2);
     

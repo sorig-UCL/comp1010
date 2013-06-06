@@ -78,7 +78,7 @@ int getVoltage() {
     return value.values[0];
 }
 
-void turnRobot(int degrees)
+void turnRobot(int degrees, int speed)
 {
     char buf[BUF_SIZE];
     
@@ -93,7 +93,7 @@ void turnRobot(int degrees)
     // 7.1/3.0  - Works well with delay after driving forwards
     while (avarageSensorDifference(initialME, currentME) < fabs(degrees * (2.36)))
     {        
-        int speed = 1 * (degrees/abs(degrees));
+        speed *= (degrees/abs(degrees));
         sprintf(buf, "M LR %i %i", speed, -speed);
         sendCommand(buf);        
         
@@ -150,7 +150,7 @@ void driveRobotAndRecord(double wheelTurns, int speed, double turnRatio, SensorV
     }
 }
 
-void turnAndRecord(int degrees, SensorValue **list)
+void turnAndRecord(int degrees, int speed, SensorValue **list)
 {
     char buf[BUF_SIZE];
     
@@ -165,8 +165,8 @@ void turnAndRecord(int degrees, SensorValue **list)
     // 7.1/3.0  - Works well with delay after driving forwards
     while (avarageSensorDifference(initialME, currentME) < fabs(degrees * (2.36)))
     {
-        int speed = 1 * (degrees/abs(degrees));
-        sprintf(buf, "M LR %i %i", speed, -speed);
+        int aspeed = speed*((double)degrees/(double)abs(degrees));
+        sprintf(buf, "M LR %i %i", aspeed, -aspeed);
         sendCommand(buf);
         
         addSensorValue(list, createSensorValueAndRecord(SensorTypeMELR));

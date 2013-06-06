@@ -3,12 +3,6 @@
 
 #define MIN(A, B) (A < B ? A : B)
 
-typedef enum {
-    WorldStateWallLeft = 1 << 0,
-    WorldStateWallRight = 1 << 1,
-    WorldStateWallFront = 1 << 2
-} WorldState;
-
 void bumperCheck(int side)
 {
     SensorValue bumpers;
@@ -19,15 +13,23 @@ void bumperCheck(int side)
         driveRobot(-1.0, 40.0, 1.0);
         
         if (side == RIGHT) {
-            turnRobot(-45);
+            turnRobot(-45, 10);
         }
         else {
-            turnRobot(45);
+            turnRobot(45, 10);
         }
     }
 }
 
-void followWall(int side)
+int abs(int a)
+{
+    if (a < 0) {
+        return a * -1;
+    }
+    return a;
+}
+
+void followWall(int side, int degrees)
 {    
     int stopAndSearchDistance = 30;
     
@@ -40,8 +42,11 @@ void followWall(int side)
     
     SensorValue frontInfrareds, sideInfrareds;
     int distanceToWall = 20;
+    SensorValue *list = NULL;
+    sendCommand("C RME");
+    addSensorValue(&list, createSensorValueAndRecord(SensorTypeMELR));
     
-    while (1)
+    while (abs(list->values[0] - list->values[1]) < (1690.0/360.0)*degrees)
     {
         bumperCheck(side);
         
@@ -52,7 +57,7 @@ void followWall(int side)
         infraredsToDist(&sideInfrareds, SensorTypeISLR);
         
         if (frontInfrareds.values[!side] < stopAndSearchDistance) {
-            turnRobot(10 * (side == RIGHT ? -1 : 1));
+            turnAndRecord(10 * (side == RIGHT ? -1 : 1), 1, &list);
         }
         else
         {
@@ -60,7 +65,7 @@ void followWall(int side)
             int sideDistance = sideInfrareds.values[side];
             
             int minDistance = MIN(frontDistance, sideDistance);
-            int outOfRange = minDistance >= 40;
+            int outOfRange = minDistance >= 41;
             
             double ratio;
             if (side == RIGHT) {
@@ -77,34 +82,8 @@ void followWall(int side)
                 ratio = 1.0;
             }
             
-            driveRobot(0.01, 50, ratio);
+            driveRobotAndRecord(0.01, 30, ratio, &list);
         }
-    }
-}
-
-WorldState getWorldState()
-{
-    SensorValue frontIR, sideIR, ultraSound;
-    
-    sensorRead(SensorTypeIFLR, &frontIR);
-    sensorRead(SensorTypeISLR, &sideIR);
-    sensorRead(SensorTypeUS, &ultraSound);
-    
-    
-}
-
-void reactiveRobotProgram()
-{
-    // prevState, state
-    WorldState currentState, previousState;
-    
-    while (1) {
-        // update the states
-        // If wall on side -> no wall: turn in direction of wall untill it is found
-        // If passage -> no wall: turn in either direction untill a wall is found
-        // no wall: go straight
-        // wall on side: follow wall
-        // Wall
     }
 }
 
@@ -113,7 +92,11 @@ int main()
     //setIPAndPort("128.16.79.9", 55443);
 	connectAndGetSocket();
     sleep(2);
-    followWall(RIGHT);
+    followWall(RIGHT, 270);
+    while (1) {
+        followWall(LEFT, 360);
+        followWall(RIGHT, 360);
+    }
     //sendCommand("I LR -45 -45");
     //sendCommand("I R -45");
 }
