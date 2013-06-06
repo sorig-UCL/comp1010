@@ -54,12 +54,11 @@ int abs(int a)
     return a;
 }
 
-void followWall(int side, int degrees)
+void followWall(int side, int degrees, int speed)
 {
-    int speed = 20;
-    int stabilisationDistanceToWall = 20;
-    int frontSideAngle = 0;
-    int stopAndSearchDistance = 35;
+    int stabilisationDistanceToWall = 15;
+    int frontSideAngle = -10;
+    int stopAndSearchDistance = 20;
     int stopAndSearchHypotenuse = sqrt(12.5*12.5+stopAndSearchDistance*stopAndSearchDistance);
     
     updateFrontSensorPositions(side, frontSideAngle, stopAndSearchDistance);
@@ -75,9 +74,7 @@ void followWall(int side, int degrees)
     int wallInFrontFlag = 0;
     double length = 0.0;
     while (abs(list->values[0] - list->values[1]) < (1690.0/360.0)*degrees)
-    {
-        bumperCheck(side);
-        
+    {        
         sensorRead(SensorTypeIFLR, &frontInfrareds);
         sensorRead(SensorTypeISLR, &sideInfrareds);
         
@@ -86,25 +83,25 @@ void followWall(int side, int degrees)
         
         int frontDistanceToWall = cos(currentFrontSideAngle*M_PI/ 180.0)*frontInfrareds.values[side];
         int wallInFront = frontInfrareds.values[!side] < stopAndSearchHypotenuse;
-        int frontSideTooClose = frontDistanceToWall < stabilisationDistanceToWall/1.5;
+        int frontSideTooClose = frontDistanceToWall < stabilisationDistanceToWall-5.0;
         int headedTowardsTheWall = frontDistanceToWall < sideInfrareds.values[side];
-        int wallToTheSide = frontDistanceToWall < 40 || sideInfrareds.values[side] < 40;
+        int wallToTheSide = frontDistanceToWall < 50;
         
         // Too close! Do something!
         if (wallInFront || (frontSideTooClose &&  headedTowardsTheWall)) {
-            /*if (wallInFront) {
+            if (wallInFront) {
                 if (!wallInFrontFlag) {
                     updateFrontSensorPositions(side, -2*frontSideAngle, stopAndSearchDistance);
                 }
                 wallInFrontFlag = 1;
                 wallInFrontWheelTurnCount = 0.0;
-            }*/
-            
+            }
+            int degreesToCorrect = 25;
             if (wallToTheSide) {
-                turnAndRecord(35 * (side == RIGHT ? -1 : 1), speed/2, &list);
+                turnAndRecord(degreesToCorrect * (side == RIGHT ? -1 : 1), speed/2, &list);
             }
             else {
-                turnAndRecord(35 * (side == RIGHT ? 1 : -1), speed/2, &list);
+                turnAndRecord(degreesToCorrect * (side == RIGHT ? 1 : -1), speed/2, &list);
             }
             
         }
@@ -112,7 +109,7 @@ void followWall(int side, int degrees)
         else
         {
             // Should the sensor position be reset yet?
-            if (wallInFrontFlag && wallInFrontWheelTurnCount > 0.05) {
+            if (wallInFrontFlag && wallInFrontWheelTurnCount > 0.03) {
                 updateFrontSensorPositions(side, frontSideAngle, stopAndSearchDistance);
                 wallInFrontFlag = 0;
             }
@@ -133,7 +130,7 @@ void followWall(int side, int degrees)
             // Stabilise the distance to the wall around the specified value (e.g. 20 cm)
             ratio += ((minDistance-stabilisationDistanceToWall)/((double)stabilisationDistanceToWall-5.0)) * (side == LEFT ? -1 : 1);
             
-            ratio = MAX(0.1, ratio);
+            ratio = MAX(0.2, ratio);
             ratio = MIN(6.0, ratio);
             
             if (outOfRange) {
@@ -153,10 +150,11 @@ int main()
 	connectAndGetSocket();
     sleep(2);
     
-    followWall(RIGHT, 270);
+    int speed = 80;
+    
     while (1) {
-        followWall(LEFT, 360);
-        followWall(RIGHT, 360);
+        followWall(LEFT, 360, speed);
+        speed += 20;
     }
     
     
